@@ -6,25 +6,57 @@
 /*   By: miaghabe <miaghabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 15:45:05 by miaghabe          #+#    #+#             */
-/*   Updated: 2025/03/21 17:16:32 by miaghabe         ###   ########.fr       */
+/*   Updated: 2025/03/23 21:34:56 by miaghabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/pipex.h"
 
+// void	execute_command(char *argument, char **env)
+// {
+// 	char	*full_path;
+// 	char	**split_argument;
+
+// 	split_argument = ft_split(argument, ' ');
+// 	full_path = get_path(split_argument[0], env);
+// 	if (execve(full_path, split_argument, env) == -1)
+// 	{
+// 		ft_putendl_fd("Command not found", 2);
+// 		free_split(split_argument);
+// 		free(full_path);
+// 		exit (1);
+// 	}
+// }
 void	execute_command(char *argument, char **env)
 {
 	char	*full_path;
 	char	**split_argument;
 
 	split_argument = ft_split(argument, ' ');
-	full_path = get_path(split_argument[0], env);
-	if (execve(full_path, split_argument, env) == -1)
+	if (ft_strchr(split_argument[0], '/'))
+		full_path = split_argument[0];
+	else
+	{
+		full_path = get_path(split_argument[0], env);
+		if (!full_path)
+		{
+			ft_putendl_fd("Command not found", 2);
+			free_split(split_argument);
+			exit(1);
+		}
+	}
+	if (access(full_path, X_OK) == -1)
 	{
 		ft_putendl_fd("Command not found", 2);
 		free_split(split_argument);
+		exit(126);
+	}
+	if (execve(full_path, split_argument, env) == -1)
+	{
+		perror("Execve failed");
+		free_split(split_argument);
 		free(full_path);
-		exit (1);
+		exit(1);
 	}
 }
 
