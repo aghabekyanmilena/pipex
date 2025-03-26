@@ -6,7 +6,7 @@
 /*   By: miaghabe <miaghabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 15:45:05 by miaghabe          #+#    #+#             */
-/*   Updated: 2025/03/26 11:01:51 by miaghabe         ###   ########.fr       */
+/*   Updated: 2025/03/26 14:36:44 by miaghabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,13 @@ void	execute_command(char *argument, char **env)
 	char	*full_path;
 	char	**split_argument;
 
+	check_empty_command(argument);
 	split_argument = ft_split(argument, ' ');
+	if (!split_argument || !split_argument[0])
+	{
+		free_split(split_argument);
+		exit(1);
+	}
 	if (ft_strchr(split_argument[0], '/'))
 		full_path = split_argument[0];
 	else
@@ -42,7 +48,8 @@ void	execute_command(char *argument, char **env)
 		full_path = get_path(split_argument[0], env);
 		if (!full_path)
 		{
-			ft_putendl_fd("Command not found", 2);
+			ft_putstr_fd("pipex: command not found: ", 2);
+			ft_putendl_fd(split_argument[0], 2);
 			free_split(split_argument);
 			exit(1);
 		}
@@ -86,21 +93,12 @@ int	main(int argc, char **argv, char **env)
 	pid_t	proc_id;
 
 	if (argc != 5)
-	{
-		write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 38);
-		return (1);
-	}
+		return (write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 38), 1);
 	if (pipe(pipe_fd) == -1)
-	{
-		perror("Pipe fail");
-		return (1);
-	}
+		return (perror("Pipe fail"), 1);
 	proc_id = fork();
 	if (proc_id == -1)
-	{
-		perror("Fork fail");
-		return (1);
-	}
+		return (perror("Fork fail"), 1);
 	if (proc_id == 0)
 		execute_child(argv, env, pipe_fd);
 	execute_parent(argv, env, pipe_fd);

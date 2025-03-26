@@ -6,7 +6,7 @@
 /*   By: miaghabe <miaghabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 15:58:00 by miaghabe          #+#    #+#             */
-/*   Updated: 2025/03/25 14:12:37 by miaghabe         ###   ########.fr       */
+/*   Updated: 2025/03/26 14:20:01 by miaghabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,15 @@ void	free_split(char **split)
 	while (split[i])
 		free(split[i++]);
 	free(split);
+}
+
+void	check_empty_command(char *argument)
+{
+	if (!argument || !*argument)
+	{
+		ft_putendl_fd("pipex: command cannot be empty", 2);
+		exit(1);
+	}
 }
 
 char	*get_right_path(char **env)
