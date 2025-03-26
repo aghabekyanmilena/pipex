@@ -6,27 +6,29 @@
 /*   By: miaghabe <miaghabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 15:45:05 by miaghabe          #+#    #+#             */
-/*   Updated: 2025/03/23 21:34:56 by miaghabe         ###   ########.fr       */
+/*   Updated: 2025/03/26 11:01:51 by miaghabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/pipex.h"
 
-// void	execute_command(char *argument, char **env)
-// {
-// 	char	*full_path;
-// 	char	**split_argument;
+void	execute_and_check(char *full_path, char **split_argument, char **env)
+{
+	if (access(full_path, X_OK) == -1)
+	{
+		ft_putendl_fd("Command not found", 2);
+		free_split(split_argument);
+		exit(1);
+	}
+	if (execve(full_path, split_argument, env) == -1)
+	{
+		perror("execve failed");
+		free_split(split_argument);
+		free(full_path);
+		exit(1);
+	}
+}
 
-// 	split_argument = ft_split(argument, ' ');
-// 	full_path = get_path(split_argument[0], env);
-// 	if (execve(full_path, split_argument, env) == -1)
-// 	{
-// 		ft_putendl_fd("Command not found", 2);
-// 		free_split(split_argument);
-// 		free(full_path);
-// 		exit (1);
-// 	}
-// }
 void	execute_command(char *argument, char **env)
 {
 	char	*full_path;
@@ -45,19 +47,7 @@ void	execute_command(char *argument, char **env)
 			exit(1);
 		}
 	}
-	if (access(full_path, X_OK) == -1)
-	{
-		ft_putendl_fd("Command not found", 2);
-		free_split(split_argument);
-		exit(126);
-	}
-	if (execve(full_path, split_argument, env) == -1)
-	{
-		perror("Execve failed");
-		free_split(split_argument);
-		free(full_path);
-		exit(1);
-	}
+	execute_and_check(full_path, split_argument, env);
 }
 
 void	execute_child(char **argv, char **env, int *pipe_fd)
@@ -113,7 +103,7 @@ int	main(int argc, char **argv, char **env)
 	}
 	if (proc_id == 0)
 		execute_child(argv, env, pipe_fd);
-	waitpid(proc_id, NULL, 0);
 	execute_parent(argv, env, pipe_fd);
+	waitpid(proc_id, NULL, 0);
 	return (0);
 }
