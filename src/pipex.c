@@ -6,7 +6,7 @@
 /*   By: miaghabe <miaghabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 15:45:05 by miaghabe          #+#    #+#             */
-/*   Updated: 2025/03/26 14:36:44 by miaghabe         ###   ########.fr       */
+/*   Updated: 2025/03/26 16:28:29 by miaghabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,18 +90,26 @@ void	execute_parent(char **argv, char **env, int *pipe_fd)
 int	main(int argc, char **argv, char **env)
 {
 	int		pipe_fd[2];
-	pid_t	proc_id;
+	pid_t	child1;
+	pid_t	child2;
 
 	if (argc != 5)
 		return (write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 38), 1);
 	if (pipe(pipe_fd) == -1)
 		return (perror("Pipe fail"), 1);
-	proc_id = fork();
-	if (proc_id == -1)
+	child1 = fork();
+	if (child1 == -1)
 		return (perror("Fork fail"), 1);
-	if (proc_id == 0)
+	if (child1 == 0)
 		execute_child(argv, env, pipe_fd);
-	execute_parent(argv, env, pipe_fd);
-	waitpid(proc_id, NULL, 0);
+	child2 = fork();
+	if (child2 == -1)
+		return (perror("Fork fail"), 1);
+	if (child2 == 0)
+		execute_parent(argv, env, pipe_fd);
+	close(pipe_fd[0]);
+	close(pipe_fd[1]);
+	waitpid(child1, NULL, 0);
+	waitpid(child2, NULL, 0);
 	return (0);
 }
